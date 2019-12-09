@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 
 project(gen_proj)
 
-add_executable(gen_proj main.cpp files.hpp)
+add_executable(gen_proj main.cpp project-template-files.hpp)
 
 set(Boost_USE_STATIC_LIBS ON)
 add_subdirectory(convenience)

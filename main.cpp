@@ -21,7 +21,7 @@ void generate_project(string project_name)
 		string content{get<1>(t).data(), get<1>(t).size()};
 		replace_all(file_path, "PROJ_NME", project_name);
 		create_directories(absolute(path(file_path)).parent_path());
-		ofstream ofs(file_path, std::ios::binary | std::ofstream::trunc);
+		ofstream ofs(file_path, ios::binary | ios::trunc);
 
 		if (!ofs)
 		{
@@ -65,11 +65,27 @@ auto parse_commandline(int argc, char** argv)
 	return make_tuple(*project_name);
 }
 
+template<class... Args>
+void execute(string command, Args... args)
+{
+    int return_code = system(search_path(command), args..., bp::std_out > stdout,
+            bp::std_err > stderr, bp::std_in < stdin);
+
+    if (return_code != 0)
+        throw runtime_error(str("Error: %1% returned %2%"_f % command % return_code));
+}
+
 int main(int argc, char** argv)
 {
 	try
 	{
-		unpack(generate_project)(parse_commandline(argc, argv));
+        auto params = parse_commandline(argc, argv);
+		unpack(generate_project)(params);
+        current_path(get<0>(params));
+        execute("git", "init");
+        execute("git", "submodule", "add", "git@github.com:Javanater/convenience.git");
+        execute("git", "add", ".");
+        execute("git", "commit", "-m", "'Auto generated project'");
 	}
 	catch (exception const& e)
 	{
